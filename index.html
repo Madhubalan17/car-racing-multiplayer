@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🏁 ROAD RIVALS - Multiplayer Cyber Racing</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="cyber-background"></div>
+<div class="scanlines"></div>
+
+<div class="app-container">
+
+    <!-- Top Navigation Bar -->
+    <header class="cyber-header">
+        <div class="brand">
+            <span class="brand-icon">🏎️</span>
+            <div>
+                <h1>ROAD RIVALS</h1>
+                <p class="tagline">MULTIPLAYER ARCADE RACING</p>
+            </div>
+        </div>
+
+        <div class="header-actions">
+            <button id="audioToggle" class="icon-btn" title="Toggle Sound (M)" aria-label="Toggle Sound">
+                <span id="audioIcon">🔊</span>
+            </button>
+            <button id="helpToggle" class="icon-btn" title="Controls & Help (?)" aria-label="Help">❓</button>
+            <button id="fullscreenToggle" class="icon-btn" title="Fullscreen (F)" aria-label="Fullscreen">⛶</button>
+        </div>
+    </header>
+
+    <!-- MAIN LOBBY / MODE SELECTOR -->
+    <section id="lobbySection" class="lobby-card">
+        <h2 class="section-title">CHOOSE RACE MODE</h2>
+
+        <!-- Mode Select Grid -->
+        <div class="mode-grid">
+            <!-- Mode 1: Solo vs AI -->
+            <div class="mode-card active" data-mode="ai">
+                <div class="mode-icon">🤖</div>
+                <h3>SOLO VS AI</h3>
+                <p>Race against an intelligent rival car immediately</p>
+                <div class="ai-difficulty-select">
+                    <label for="aiDifficulty">Difficulty:</label>
+                    <select id="aiDifficulty">
+                        <option value="easy">Rookie</option>
+                        <option value="normal" selected>Pro</option>
+                        <option value="hard">Nitro Beast</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Mode 2: Local 2-Player (Same Keyboard) -->
+            <div class="mode-card" data-mode="local2p">
+                <div class="mode-icon">👥</div>
+                <h3>LOCAL 2-PLAYER</h3>
+                <p>Play with a friend on the same keyboard or screen</p>
+                <div class="mode-badge">Instant • 0 Lag</div>
+            </div>
+
+            <!-- Mode 3: Two Tabs / Same Device Broadcast -->
+            <div class="mode-card" data-mode="tabs">
+                <div class="mode-icon">🔄</div>
+                <h3>TWO TABS AUTO-SYNC</h3>
+                <p>Open 2 browser windows on this PC - connects automatically!</p>
+                <div class="mode-badge">Auto-Connect</div>
+            </div>
+
+            <!-- Mode 4: Online P2P WebRTC -->
+            <div class="mode-card" data-mode="webrtc">
+                <div class="mode-icon">🌐</div>
+                <h3>ONLINE P2P ROOM</h3>
+                <p>Race across 2 devices using WebRTC room code / link</p>
+                <div class="mode-badge">Cross-Device</div>
+            </div>
+        </div>
+
+        <!-- Customization Box -->
+        <div class="customization-panel">
+            <div class="custom-group">
+                <label for="playerName">Racer Name:</label>
+                <input type="text" id="playerName" maxlength="12" value="Player 1" placeholder="Enter name">
+            </div>
+
+            <div class="custom-group">
+                <label>Car Color (P1):</label>
+                <div class="color-palette" id="p1ColorPalette">
+                    <button type="button" class="color-dot active" style="--c:#00f0ff" data-color="#00f0ff" title="Cyber Cyan"></button>
+                    <button type="button" class="color-dot" style="--c:#ff0055" data-color="#ff0055" title="Neon Crimson"></button>
+                    <button type="button" class="color-dot" style="--c:#39ff14" data-color="#39ff14" title="Electric Lime"></button>
+                    <button type="button" class="color-dot" style="--c:#a020f0" data-color="#a020f0" title="Ultra Violet"></button>
+                    <button type="button" class="color-dot" style="--c:#ffb703" data-color="#ffb703" title="Solar Gold"></button>
+                    <button type="button" class="color-dot" style="--c:#ffffff" data-color="#ffffff" title="Phantom White"></button>
+                </div>
+            </div>
+
+            <!-- Track Length Selector -->
+            <div class="custom-group">
+                <label for="trackLength">Race Distance:</label>
+                <select id="trackLength">
+                    <option value="1000">Sprint (1000m)</option>
+                    <option value="1500" selected>Standard (1500m)</option>
+                    <option value="2500">Endurance (2500m)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- WebRTC Connection Sub-Panel (visible when WebRTC mode is selected) -->
+        <div id="webrtcPanel" class="sub-panel hidden">
+            <h4>🌐 WebRTC Room Setup</h4>
+            <div class="webrtc-grid">
+                <div class="webrtc-box">
+                    <h5>Host Room (Player 1)</h5>
+                    <button id="btnCreateOffer" class="cyber-btn primary">1. Create Room Offer</button>
+                    <textarea id="offerTextOut" readonly placeholder="Offer will appear here..."></textarea>
+                    <div class="btn-row">
+                        <button id="btnCopyOffer" class="cyber-btn small">📋 Copy Offer</button>
+                        <button id="btnCopyInviteLink" class="cyber-btn small neon">🔗 Copy Direct Link</button>
+                    </div>
+                    <textarea id="answerTextIn" placeholder="Paste Player 2 Answer here..."></textarea>
+                    <button id="btnApplyAnswer" class="cyber-btn success">3. Connect Player 2</button>
+                </div>
+
+                <div class="webrtc-box">
+                    <h5>Join Room (Player 2)</h5>
+                    <textarea id="offerTextIn" placeholder="Paste Player 1 Offer here (or open invite link)..."></textarea>
+                    <button id="btnCreateAnswer" class="cyber-btn primary">2. Generate Answer</button>
+                    <textarea id="answerTextOut" readonly placeholder="Answer will appear here..."></textarea>
+                    <button id="btnCopyAnswer" class="cyber-btn small">📋 Copy Answer</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Two-Tabs Setup Sub-Panel -->
+        <div id="tabsPanel" class="sub-panel hidden">
+            <h4>🔄 Two-Tabs Auto-Sync</h4>
+            <p>Simply open this same page in <strong>two different tabs or windows</strong> on this computer. Click below to host or join:</p>
+            <div class="btn-row center">
+                <button id="btnTabsHost" class="cyber-btn primary">Host as Player 1</button>
+                <button id="btnTabsJoin" class="cyber-btn neon">Join as Player 2</button>
+            </div>
+        </div>
+
+        <!-- Start Race Button -->
+        <div class="start-bar">
+            <button id="btnStartGame" class="launch-btn">
+                <span>START RACE</span>
+                <span class="launch-glow"></span>
+            </button>
+            <div id="connectionStatus" class="status-pill">Ready to race</div>
+        </div>
+    </section>
+
+    <!-- GAME ARENA SECTION -->
+    <section id="gameSection" class="game-card">
+
+        <!-- In-Game Header / Top Info -->
+        <div class="game-hud-top">
+            <div class="racer-tag p1">
+                <span class="dot" id="p1Indicator"></span>
+                <span id="hudP1Name">YOU</span>
+            </div>
+
+            <!-- Mini Track Progress Bar -->
+            <div class="track-progress-container">
+                <div class="track-finish-flag">🏁</div>
+                <div class="track-bar">
+                    <div id="progressP1" class="racer-marker p1" title="You">🏎️</div>
+                    <div id="progressP2" class="racer-marker p2" title="Rival">🏎️</div>
+                </div>
+                <div class="track-start-line">🚦</div>
+            </div>
+
+            <div class="racer-tag p2">
+                <span class="dot" id="p2Indicator"></span>
+                <span id="hudP2Name">RIVAL</span>
+            </div>
+        </div>
+
+        <!-- Game Layout (Canvas + Side Dashboard) -->
+        <div class="game-layout">
+
+            <!-- Canvas Container -->
+            <div class="canvas-wrapper">
+                <canvas id="gameCanvas" width="480" height="680"></canvas>
+
+                <!-- 3-2-1 Countdown Overlay -->
+                <div id="countdownOverlay" class="countdown-overlay hidden">
+                    <div id="countdownText" class="countdown-text">3</div>
+                </div>
+
+                <!-- Crash Alert Overlay -->
+                <div id="crashAlert" class="crash-alert hidden">
+                    💥 CRASH! SPEED DROPPED!
+                </div>
+
+                <!-- Finished Victory / Defeat Modal -->
+                <div id="finishModal" class="finish-modal hidden">
+                    <div class="finish-card">
+                        <div id="finishTrophy" class="finish-icon">🏆</div>
+                        <h2 id="finishTitle">RACE COMPLETE!</h2>
+                        <p id="finishSubtitle">You finished 1st Place!</p>
+
+                        <div class="finish-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Your Time</span>
+                                <span id="statTime" class="stat-value">00:00.0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Top Speed</span>
+                                <span id="statTopSpeed" class="stat-value">0 km/h</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Crashes</span>
+                                <span id="statCrashes" class="stat-value">0</span>
+                            </div>
+                        </div>
+
+                        <div class="finish-buttons">
+                            <button id="btnRematch" class="cyber-btn primary">🔄 Rematch</button>
+                            <button id="btnReturnLobby" class="cyber-btn secondary">🏠 Main Menu</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scoreboard / Dashboard -->
+            <div class="game-dashboard">
+
+                <!-- Speedometer Panel -->
+                <div class="dash-card speed-card">
+                    <div class="card-label">CURRENT SPEED</div>
+                    <div class="speed-readout">
+                        <span id="dashSpeed" class="speed-number">0</span>
+                        <span class="speed-unit">KM/H</span>
+                    </div>
+                    <div class="speed-bar-track">
+                        <div id="dashSpeedBar" class="speed-bar-fill"></div>
+                    </div>
+                </div>
+
+                <!-- Nitro Tank Gauge -->
+                <div class="dash-card nitro-card">
+                    <div class="card-label-row">
+                        <span>NITRO BOOST</span>
+                        <span id="nitroReadyText" class="nitro-tag">READY [W / ⬆]</span>
+                    </div>
+                    <div class="nitro-bar-track">
+                        <div id="dashNitroBar" class="nitro-bar-fill"></div>
+                    </div>
+                </div>
+
+                <!-- Race Lead/Behind Split -->
+                <div class="dash-card split-card">
+                    <div class="card-label">RACE STATUS</div>
+                    <div id="dashSplit" class="split-status tie">EVEN RACE</div>
+                </div>
+
+                <!-- Distance Metrics Grid -->
+                <div class="dash-metrics-grid">
+                    <div class="dash-card mini">
+                        <div class="card-label">YOUR DISTANCE</div>
+                        <div id="dashP1Dist" class="metric-val">0 m</div>
+                    </div>
+                    <div class="dash-card mini">
+                        <div class="card-label">RIVAL DISTANCE</div>
+                        <div id="dashP2Dist" class="metric-val">0 m</div>
+                    </div>
+                </div>
+
+                <!-- In-Game Action Buttons -->
+                <div class="dash-actions">
+                    <button id="btnRestartRace" class="cyber-btn warning small">🔄 Restart Race</button>
+                    <button id="btnExitToLobby" class="cyber-btn secondary small">🚪 Exit to Menu</button>
+                </div>
+
+                <!-- In-Game Controls Legend (Desktop) -->
+                <div class="desktop-controls-hint">
+                    <h4>🎮 CONTROLS</h4>
+                    <div id="controlsHintLocal" class="hidden">
+                        <p><strong>P1:</strong> [A] [D] Steer | [W] Nitro | [S] Brake</p>
+                        <p><strong>P2:</strong> [◀] [▶] Steer | [▲] Nitro | [▼] Brake</p>
+                    </div>
+                    <div id="controlsHintSingle">
+                        <p><strong>Steer:</strong> [A] [D] or [◀] [▶] Arrows</p>
+                        <p><strong>Nitro Boost:</strong> [W] or [▲] Up / [Space]</p>
+                        <p><strong>Brake / Slow:</strong> [S] or [▼] Down</p>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Mobile Touch Controls Bar -->
+        <div class="mobile-controls" id="mobileControls">
+            <button class="touch-btn steer-btn" id="mBtnLeft">◀ LEFT</button>
+            <button class="touch-btn brake-btn" id="mBtnBrake">🛑 BRAKE</button>
+            <button class="touch-btn nitro-btn" id="mBtnNitro">⚡ NITRO</button>
+            <button class="touch-btn steer-btn" id="mBtnRight">RIGHT ▶</button>
+        </div>
+
+    </section>
+
+    <!-- Help / How-To Modal -->
+    <div id="helpModal" class="help-modal hidden">
+        <div class="help-card">
+            <div class="help-header">
+                <h3>📖 HOW TO PLAY & RUN SERVER</h3>
+                <button id="btnCloseHelp" class="close-btn">&times;</button>
+            </div>
+            <div class="help-content">
+                <h4>🎮 Game Rules & Tips</h4>
+                <ul>
+                    <li>Dodge traffic cars to avoid slowing down from crashes!</li>
+                    <li>Passing close to traffic cars without hitting them awards <strong>bonus Nitro</strong>!</li>
+                    <li>Hold <strong>[W] / [Space] / [▲]</strong> to burn Nitro and reach 280+ km/h!</li>
+                    <li>First player to cross the finish line wins the race!</li>
+                </ul>
+
+                <h4>🚀 How to Run the Server (Local & LAN)</h4>
+                <div class="code-box">
+                    <code>node server.js</code>
+                </div>
+                <p>Then open in your browser:</p>
+                <ul>
+                    <li>Local: <code>http://localhost:8080</code></li>
+                    <li>Play on Mobile or with Friends on same Wi-Fi: use the LAN address printed in terminal (e.g. <code>http://192.168.1.X:8080</code>)!</li>
+                    <li>Or run with Python: <code>python -m http.server 8080</code></li>
+                    <li>Or use VS Code Live Server!</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
